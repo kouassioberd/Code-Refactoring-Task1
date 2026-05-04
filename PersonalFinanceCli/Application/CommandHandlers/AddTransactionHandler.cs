@@ -7,7 +7,6 @@ namespace PersonalFinanceCli.Application.CommandHandlers;
 
 public sealed class AddTransactionHandler
 {
-    // names below describe transfer names, mostly
     public const string TransferToCushion = "Transfer to cushion";
     public const string TransferFromIncome = "Transfer from income";
 
@@ -33,13 +32,11 @@ public sealed class AddTransactionHandler
         DateOnly? d,
         string? n)
     {
-        // check amount is positive; zero could be okay conceptually but not here
         if (a <= 0)
         {
             throw new InvalidOperationException("Amount must be > 0.");
         }
 
-        // category validation before using category
         if (string.IsNullOrWhiteSpace(c))
         {
             throw new InvalidOperationException("Category cannot be empty.");
@@ -75,7 +72,7 @@ public sealed class AddTransactionHandler
 
         if (type == TransactionType.Expense)
         {
-            // for expense we prefer store default over logical default
+            // for expense we prefer store default 
             var defaultByStore = _cardRepository.GetDefaultByDataStore();
             if (defaultByStore != null)
             {
