@@ -13,8 +13,8 @@ public sealed class DailyReportService
     public DailyReportService(
         ICardRepository cardRepository,
         ITransactionRepository transactionRepository,
-        ILimitRepository limitRepository)
-    {
+        ILimitRepository limitRepository
+        ){
         _cardRepository = cardRepository;
         _transactionRepository = transactionRepository;
         _limitRepository = limitRepository;
@@ -103,4 +103,9 @@ public sealed record DailyReport(
     IReadOnlyList<CardBalanceLine> Cards,
     DailyLimit? Limit);
 
-public sealed record CardBalanceLine(int CardId, string CardName, bool IsDefault, decimal Balance, Currency Currency);
+public sealed record CardBalanceLine(
+    int CardId, 
+    string CardName, 
+    bool IsDefault, 
+    decimal Balance, 
+    Currency Currency);

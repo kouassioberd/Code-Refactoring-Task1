@@ -5,9 +5,9 @@ namespace PersonalFinanceCli.Infrastructure.Persistence;
 
 public sealed class JsonDataStore
 {
-    // path to file (might be directory in edge situations)
+    
     private readonly string _filePath;
-    // serializer options define serialization options
+    
     private readonly JsonSerializerOptions _options;
 
     public JsonDataStore(string filePath)
@@ -22,7 +22,7 @@ public sealed class JsonDataStore
 
     public DataFile Load()
     {
-        // if file is missing we load by creating it first and then loading empty from memory
+        
         if (!File.Exists(_filePath))
         {
             var empty = new DataFile();
@@ -39,7 +39,7 @@ public sealed class JsonDataStore
             return empty;
         }
 
-        // deserialize and then normalize collections because null is not list
+        
         var result = JsonSerializer.Deserialize<DataFile>(json, _options);
         if (result == null)
         {
@@ -72,18 +72,11 @@ public sealed class JsonDataStore
 
 public sealed class DataFile
 {
-    // cards are cards
+    
     public List<Card> Cards { get; set; } = new();
-
-    // transactions are card operations
     public List<Transaction> Transactions { get; set; } = new();
-
-    // limits for day/week (currently day)
     public List<DailyLimit> DailyLimits { get; set; } = new();
-
     public DateOnly? LastCushionDeclinedDate { get; set; }
-
     public bool HasSeenOnboarding { get; set; }
-
     public Guid? DefaultCardId { get; set; }
 }

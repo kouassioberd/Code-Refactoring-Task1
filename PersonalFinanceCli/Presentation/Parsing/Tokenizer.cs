@@ -12,7 +12,7 @@ public static class Tokenizer
             return result;
         }
 
-        var sb = new StringBuilder();
+        var stringBuilder = new StringBuilder();
         var inQuotes = false;
 
         foreach (var ch in commandLine)
@@ -25,21 +25,21 @@ public static class Tokenizer
 
             if (char.IsWhiteSpace(ch) && !inQuotes)
             {
-                if (sb.Length > 0)
+                if (stringBuilder.Length > 0)
                 {
-                    result.Add(sb.ToString());
-                    sb.Clear();
+                    result.Add(stringBuilder.ToString());
+                    stringBuilder.Clear();
                 }
             }
             else
             {
-                sb.Append(ch);
+                stringBuilder.Append(ch);
             }
         }
 
-        if (sb.Length > 0)
+        if (stringBuilder.Length > 0)
         {
-            result.Add(sb.ToString());
+            result.Add(stringBuilder.ToString());
         }
 
         return result;
