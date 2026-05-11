@@ -26,50 +26,47 @@ public sealed class CommandParser
     private ParsedCommand Parse(IReadOnlyList<string> tokens)
     {
         
-        if (tokens.Count == 0)
-        {
-            throw new InvalidOperationException("Command is empty.");
-        }
+        CommandValidator.EnsureNotEmpty(tokens);
 
-        var root = tokens[0].ToLowerInvariant();
-        if (root == Card) 
+        var commandType = tokens[0].ToLowerInvariant();
+        return commandType switch
         {
-            return ParseCard(tokens);
-        }
+            Card => ParseCard(tokens),
 
-        if (root == Expense || root == Income)
-        {
-            return ParseTransaction(tokens, root == Income ? TransactionType.Income : TransactionType.Expense);
-        }
+            Expense => ParseTransaction(
+                tokens,
+                TransactionType.Expense),
 
-        if (root == Limit)
-        {
-            return ParseLimit(tokens);
-        }
+            Income => ParseTransaction(
+                tokens,
+                TransactionType.Income),
 
-        if (root == Report)
-        {
-            return ParseReport(tokens);
-        }
+            Limit => ParseLimit(tokens),
 
-        throw new InvalidOperationException("Unknown command.");
+            Report => ParseReport(tokens),
+
+            _ => throw new InvalidOperationException(
+                "Unknown command.")
+        };
     }
 
     private static ParsedCommand ParseCard(IReadOnlyList<string> tokens)
     {
-        
-        if (tokens.Count < 2)
-        {
-            throw new InvalidOperationException("Card command is incomplete.");
-        }
+
+        CommandValidator.EnsureMinimumArguments(
+            tokens,
+            2,
+            "Card command is incomplete."
+        );
 
         var action = tokens[1].ToLowerInvariant();
         if (action == "add")
         {
-            if (tokens.Count < 4)
-            {
-                throw new InvalidOperationException("card add requires: card add \"name\" <currency> [initialBalance].");
-            }
+            CommandValidator.EnsureMinimumArguments(
+                tokens,
+                4,
+                "card add requires: card add \"name\" <currency> [initialBalance]."
+            );
 
             decimal? initial = null;
             if (tokens.Count >= 5)
@@ -106,10 +103,11 @@ public sealed class CommandParser
 
     private static ParsedCommand ParseTransaction(IReadOnlyList<string> tokens, TransactionType type)
     {
-        if (tokens.Count < 4)
-        {
-            throw new InvalidOperationException("Transaction command is incomplete.");
-        }
+        CommandValidator.EnsureMinimumArguments(
+            tokens,
+            4,
+            "Transaction command is incomplete."
+        );
 
         var action = tokens[1].ToLowerInvariant();
         if (action != "add")
@@ -218,10 +216,11 @@ public sealed class CommandParser
 
     private static ParsedCommand ParseLimit(IReadOnlyList<string> tokens)
     {
-        if (tokens.Count < 2)
-        {
-            throw new InvalidOperationException("Limit command is incomplete.");
-        }
+        CommandValidator.EnsureMinimumArguments(
+            tokens,
+            2,
+            "Limit command is incomplete."
+        );
 
         var action = tokens[1].ToLowerInvariant();
         if (action == "set")

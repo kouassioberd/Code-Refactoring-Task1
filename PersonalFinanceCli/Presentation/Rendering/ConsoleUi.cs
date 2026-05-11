@@ -28,6 +28,7 @@ public sealed class ConsoleUi
     private readonly IConsole _console;
     private readonly CushionService _cushionService;
     private readonly WizardOptionCollector _wizardOptionCollector;
+    private readonly ConfirmationPrompt _confirmationPrompt;
     private bool _onboardingChecked;
 
     public ConsoleUi(
@@ -63,6 +64,7 @@ public sealed class ConsoleUi
         _console = console;
         _cushionService = cushionService;
         _wizardOptionCollector = new WizardOptionCollector();
+        _confirmationPrompt = new ConfirmationPrompt(console);
     }
 
     public int Execute(string[] args)
@@ -159,7 +161,7 @@ public sealed class ConsoleUi
             return;
         }
 
-        if (AskYesNoDefaultNo("Create 'Financial cushion' account? (y/n)"))
+        if (_confirmationPrompt.AskYesNoDefaultNo("Create 'Financial cushion' account? (y/n)"))
         {
             _cushionService.CreateCushion(Currency.RUB);
             _onboardingStateRepository.SetLastCushionDeclinedDate(null);
@@ -337,7 +339,7 @@ public sealed class ConsoleUi
 
     private void HandleOptionalCushionTransfer(decimal incomeAmount, string category, int sourceCardId, DateOnly? date)
     {
-        if (!AskYesNoDefaultYes("Transfer part of income to 'Financial cushion'? (y/n)"))
+        if (!_confirmationPrompt.AskYesNoDefaultYes("Transfer part of income to 'Financial cushion'? (y/n)"))
         {
             return;
         }
@@ -354,7 +356,7 @@ public sealed class ConsoleUi
 
         if (cushion == null)
         {
-            if (AskYesNo("Cushion account not found. Create now? (y/n)"))
+            if (_confirmationPrompt.AskYesNo("Cushion account not found. Create now? (y/n)"))
             {
                 cushion = _cushionService.CreateCushion(sourceCard.Currency);
             }
@@ -367,7 +369,7 @@ public sealed class ConsoleUi
         if (sourceCard.Currency != cushion.Currency)
         {
             var canceledMismatch = false;
-            if (!AskYesNoWithCancel("Currencies do not match. Transfer anyway? (y/n)", out canceledMismatch))
+            if (!_confirmationPrompt.AskYesNoWithCancel("Currencies do not match. Transfer anyway? (y/n)", out canceledMismatch))
             {
                 return;
             }
@@ -436,131 +438,7 @@ public sealed class ConsoleUi
         }
     }
 
-    private bool AskYesNo(string prompt)
-    {
-        while (true)
-        {
-            _console.Write($"{prompt} ");
-            var raw = _console.ReadLine();
-            if (raw == null)
-            {
-                return false;
-            }
-
-            var value = raw.Trim();
-            if (value.Equals("y", StringComparison.OrdinalIgnoreCase) || value.Equals("yes", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            if (value.Equals("n", StringComparison.OrdinalIgnoreCase) || value.Equals("no", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            _console.WriteLine("Error: Please answer y/n.");
-        }
-    }
-
-    private bool AskYesNoDefaultYes(string prompt)
-    {
-        while (true)
-        {
-            _console.Write($"{prompt} ");
-            var raw = _console.ReadLine();
-            if (raw == null)
-            {
-                return false;
-            }
-
-            var value = raw.Trim();
-            if (value.Length == 0)
-            {
-                return true;
-            }
-
-            if (value.Equals("y", StringComparison.OrdinalIgnoreCase) || value.Equals("yes", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            if (value.Equals("n", StringComparison.OrdinalIgnoreCase) || value.Equals("no", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            _console.WriteLine("Error: Please answer y/n.");
-        }
-    }
-
-    private bool AskYesNoDefaultNo(string prompt)
-    {
-        while (true)
-        {
-            _console.Write($"{prompt} ");
-            var raw = _console.ReadLine();
-            if (raw == null)
-            {
-                return false;
-            }
-
-            var value = raw.Trim();
-            if (value.Length == 0)
-            {
-                return false;
-            }
-
-            if (value.Equals("y", StringComparison.OrdinalIgnoreCase) || value.Equals("yes", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            if (value.Equals("n", StringComparison.OrdinalIgnoreCase) || value.Equals("no", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            _console.WriteLine("Error: Please answer y/n.");
-        }
-    }
-
-    private bool AskYesNoWithCancel(string prompt, out bool canceled)
-    {
-        canceled = false;
-        while (true)
-        {
-            _console.Write($"{prompt} ");
-            var raw = _console.ReadLine();
-            if (raw == null)
-            {
-                return false;
-            }
-
-            var value = raw.Trim();
-            if (value.Equals("cancel", StringComparison.OrdinalIgnoreCase))
-            {
-                canceled = true;
-                return false;
-            }
-
-            if (value.Length == 0)
-            {
-                return false;
-            }
-
-            if (value.Equals("y", StringComparison.OrdinalIgnoreCase) || value.Equals("yes", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            if (value.Equals("n", StringComparison.OrdinalIgnoreCase) || value.Equals("no", StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            _console.WriteLine("Error: Please answer y/n.");
-        }
-    }
+    
 
     private void ExecuteParsedCommand(ParsedCommand command)
     {
